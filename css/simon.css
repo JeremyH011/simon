@@ -21,6 +21,31 @@ html, body {
   cursor: pointer;
 }
 
+.game_status{
+	margin-bottom:0px;
+}
+
+#pattern_gone{
+	display: block;
+}
+
+#pattern_present{
+	display: none;
+}
+
+.generate_pattern{
+  width: 100pt;
+  height: 100pt;
+  margin: 0 10pt;
+  border-width: 2pt;
+  border: 3px solid;
+  border-color: #696765;
+  cursor: pointer;
+  background-color: white;
+  font-size: 25pt;
+  text-align: center;
+}
+
 /* Per-note styles */
 #c {
     background-color: rgba(238, 0, 55, 0.4);

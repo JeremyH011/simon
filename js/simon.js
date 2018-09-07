@@ -1,7 +1,10 @@
 var KEYS = ['c', 'd', 'e', 'f'];
+var status_title = 'status';
 var NOTES = [];
+var PATTERN = [];
 var NOTE_DURATION = 1000;
-var PLAY;
+var PLAY = false;
+var generated = false;
 
 // NoteBox
 //
@@ -22,10 +25,31 @@ function NoteBox(key, onClick) {
 	var playing = 0;
 
 	this.key = key;
-	this.onClick = onClick || function (key_s) {clearTimeout(PLAY); //Resets timer
-												NOTES.push(key_s);  //Add new note to array
-												console.log(NOTES); //Debugging print
-												PLAY = setTimeout(this.play_array, 2500); //Set timer to wait to play
+	this.onClick = onClick || function (key_s) {
+													if(!PLAY)
+														return;
+													
+													NOTES.push(key_s);  //Add new note to array
+													var latest = NOTES.length - 1; //Find newest note player pushed
+													
+													console.log(NOTES); //Debugging print
+													this.play()
+													
+													//See if note inputted matches pattern or not
+													if(NOTES[latest] !== PATTERN[latest]){
+														document.getElementById(status_title).innerHTML = "Wrong Input! <br> Press 'Generate Pattern' to start another game."
+													}
+													else if(NOTES.length == PATTERN.length){
+														document.getElementById(status_title).innerHTML = "WINNER! <br> Press 'Generate Pattern' to start another game."
+													}
+													else{
+														return;
+													}
+													PLAY = false;
+													generated = false;
+													PATTERN = [];
+													NOTES=[];
+													return;
 												};
 	
 	this.play_array = function(){
@@ -68,10 +92,56 @@ function NoteBox(key, onClick) {
 		if (!enabled) return;
 
 		this.onClick(this.key)
-		//this.play()
 	}.bind(this)
 
 	boxEl.addEventListener('mousedown', this.clickHandler);
+}
+
+//Custom class to generate pattern from button
+function pattern(name, status_1){
+	var boxE2 = document.getElementById(name);
+	var status_A = document.getElementById(status_1);
+	
+	if (!boxE2) throw new Error('No NoteBox element with id' + name);
+	if (!status_A) throw new Error('No NoteBox element with id' + status_1);
+	
+	//Function that generates pattern for player to follow
+	this.generatePattern = function(){
+		//If pattern has not been generated yet, we make a new one
+		if(!generated){
+			var i;
+			document.getElementById(status_title).innerHTML = "Generating new pattern. <br> Please wait..."
+			//Generate a random pattern by generating 4 random numbers between 0 to 3, then map it to the keys in the array to create 
+			//a pattern to follow
+			for(i = 0; i <4; i++){
+				var index = Math.floor((Math.random() * 4));
+				PATTERN.push(KEYS[index]);
+			}
+			//console.log(PATTERN)
+			
+			//Play each note of the pattern, code for this was given in skeleton.
+			document.getElementById(status_title).innerHTML = "Let's Begin. <br> Listen..."
+			PATTERN.forEach(function(key, i){
+				setTimeout(notes[key].play.bind(null, key), i * NOTE_DURATION);
+			});
+			setTimeout(this.start, PATTERN.length * NOTE_DURATION);
+			generated = true;
+			PLAY = true;
+		}
+		//Restart game
+		else{
+			document.getElementById(status_title).innerHTML = "Game stopped. <br> Press 'Generate Pattern' to start a new game..."
+			generated = false;
+			PATTERN = [];
+			PLAY = false;
+		}
+	}.bind(this)
+	
+	this.start = function(){
+		document.getElementById(status_title).innerHTML = "Now <br> Follow...";
+	}
+	
+	boxE2.addEventListener('mousedown', this.generatePattern);
 }
 
 // Example usage of NoteBox.
@@ -84,6 +154,9 @@ var notes = {};
 KEYS.forEach(function (key) {
 	notes[key] = new NoteBox(key);
 });
+
+var generator = new pattern('generate', 'status')
+
 /*
 KEYS.concat(KEYS.slice().reverse()).forEach(function(key, i) {
 	setTimeout(notes[key].play.bind(null, key), i * NOTE_DURATION);
